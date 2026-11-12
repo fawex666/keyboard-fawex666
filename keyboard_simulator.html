@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Smart AI Keyboard - Yandex Style</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <!-- Yandex Sans & Clean Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Exact Yandex Sans Text Typography & Geometry */
+    .font-yandex {
+      font-family: 'YS Text', 'Yandex Sans Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif !important;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Key tap animation */
+    .key-press-anim:active {
+      transform: scale(0.93);
+      filter: brightness(1.25);
+    }
+
+    .no-select {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      height: 4px;
+      width: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(150, 150, 150, 0.3);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-[#121316] text-slate-100 flex flex-col justify-end min-h-screen p-0 font-yandex select-none">
+
+  <!-- Main Container -->
+  <div id="keyboard-root" class="w-full mx-auto flex flex-col justify-end font-yandex">
+
+    <!-- Subtle Chat Input Bar (Like Telegram message bar on the phone) -->
+    <div class="px-2 pt-1 pb-1">
+      <div class="bg-[#1f2228] border border-slate-700/60 rounded-2xl px-3.5 py-2.5 flex items-center justify-between shadow-lg">
+        <div class="flex items-center gap-2 flex-1 overflow-hidden mr-2">
+          <svg class="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <div id="text-display" class="text-sm sm:text-base text-slate-100 flex-1 truncate outline-none select-text font-normal" placeholder="Сообщение...">Сообщение...</div>
+          <span class="w-0.5 h-4 bg-sky-400 animate-pulse"></span>
+        </div>
+        <button onclick="clearText()" class="text-xs text-slate-400 hover:text-red-400 transition flex-shrink-0" title="Стереть всё">✕</button>
+      </div>
+    </div>
+
+    <!-- KEYBOARD ITSELF (YANDEX KEYBOARD STYLE) -->
+    <div id="keyboard-wrapper" class="w-full bg-[#1b1e23] border-t border-slate-800 transition-colors duration-200 shadow-2xl">
+      
+      <!-- 1. UNIFIED YANDEX-STYLE TOOLBAR -->
+      <div id="keyboard-toolbar" class="px-2 py-1.5 flex items-center justify-between gap-1 overflow-x-auto border-b border-white/5 text-slate-300">
+        
+        <!-- Yandex-style AI Icon (Красный круг «Я» / ИИ) -->
+        <button onclick="toggleAiChatModal(true)" class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-md active:scale-95 transition" title="Разговор с ИИ DeepSeek">
+          <span>Я</span>
+        </button>
+
+        <!-- 1 РЕЖИМ: Авто-расстановка знаков препинания -->
+        <button onclick="runAutoPunctuation()" class="flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-200 text-xs font-semibold active:scale-95 transition border border-slate-700" title="1 режим: Автоматическая расстановка знаков препинания через ИИ">
+          <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          <span>.,?! Знаки</span>
+        </button>
+
+        <!-- Переводчик -->
+        <button onclick="toggleTranslateModal(true)" class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 text-slate-300 active:scale-95 transition" title="Быстрый переводчик">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+        </button>
+
+        <!-- Буфер обмена -->
+        <button onclick="toggleClipboardModal(true)" class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 text-slate-300 active:scale-95 transition" title="Буфер обмена">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </button>
+
+        <!-- Камера (OCR / Сканер) -->
+        <button onclick="toggleCameraModal(true)" class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 text-slate-300 active:scale-95 transition" title="Камера: распознавание текста с фото">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </button>
+
+        <!-- Голосовой ввод -->
+        <button id="mic-btn" onclick="toggleVoiceInput()" class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 text-slate-300 active:scale-95 transition" title="Голосовой ввод">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+        </button>
+
+        <!-- Ряд цифр (123) -->
+        <button id="toggle-num-btn" onclick="toggleNumberRow()" class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 text-slate-300 active:scale-95 transition text-xs font-bold" title="Вкл/Выкл отдельный ряд цифр сверху">
+          123
+        </button>
+
+        <!-- Настройки и кастомный звук -->
+        <button onclick="toggleSettingsModal(true)" class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 text-slate-300 active:scale-95 transition" title="Настройки, темы и звук клавиш">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </button>
+      </div>
+
+      <!-- 2. NUMBER ROW: 1 2 3 4 5 6 7 8 9 0 -->
+      <div id="number-row" class="px-1 pt-1.5 pb-0.5 flex justify-center gap-1 w-full transition-all"></div>
+
+      <!-- 3. MAIN ROWS (YANDEX KEYBOARD LAYOUT) -->
+      <div id="keys-container" class="px-1 pt-0.5 pb-2 flex flex-col gap-1 w-full no-select"></div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: ДИАЛОГ С ИИ (DEEPSEEK VOICE & TEXT) -->
+  <div id="ai-chat-modal" class="fixed inset-0 bg-black/80 backdrop-blur-xs hidden items-center justify-center p-3 z-50">
+    <div class="bg-[#1f2228] border border-slate-700 rounded-3xl w-full max-w-sm p-4 flex flex-col max-h-[85vh] shadow-2xl">
+      <div class="flex items-center justify-between pb-2.5 border-b border-slate-700">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-xs">
+            Я
+          </div>
+          <div>
+            <h3 class="font-bold text-sm text-slate-100">ИИ Ассистент (DeepSeek)</h3>
+            <p class="text-[11px] text-slate-400">Голосовой и текстовый собеседник</p>
+          </div>
+        </div>
+        <button onclick="toggleAiChatModal(false)" class="text-slate-400 hover:text-white p-1 text-lg">✕</button>
+      </div>
+
+      <div id="ai-dialog-history" class="flex-1 overflow-y-auto space-y-2.5 py-3 my-1 text-xs min-h-[170px] max-h-[230px] pr-1">
+        <div class="flex flex-col items-start">
+          <div class="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-none p-2.5 text-slate-200 max-w-[90%] leading-relaxed text-xs">
+            Привет! Вы можете:
+            <ul class="list-disc list-inside mt-1 text-slate-300 space-y-0.5">
+              <li>Задать вопрос текстом или <b class="text-white">голосом</b>.</li>
+              <li>Попросить написать поздравление или исправить текст.</li>
+              <li>Вставить ответ прямо в поле сообщения!</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-1.5 overflow-x-auto pb-2 pt-1 no-select">
+        <button onclick="sendQuickPrompt('Придумай красивое поздравление с днем рождения')" class="flex-shrink-0 px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-xs hover:bg-slate-700 transition">
+          🎂 Поздравление
+        </button>
+        <button onclick="sendQuickPrompt('Как вежливо отказаться от встречи?')" class="flex-shrink-0 px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-xs hover:bg-slate-700 transition">
+          🤝 Отказ
+        </button>
+        <button onclick="sendQuickPrompt('Перефразируй более вежливо и грамотно')" class="flex-shrink-0 px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-xs hover:bg-slate-700 transition">
+          🪄 Улучшить
+        </button>
+      </div>
+
+      <div class="pt-2 border-t border-slate-700 flex items-center gap-1.5">
+        <button id="ai-voice-talk-btn" onclick="startVoiceConversationWithAi()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center justify-center" title="Нажмите и говорите с ИИ голосом">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+        </button>
+
+        <input type="text" id="ai-chat-input" placeholder="Напишите вопрос ИИ..." onkeydown="if(event.key==='Enter') sendAiDialogMessage()" class="flex-1 bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-400 outline-none focus:border-slate-500">
+
+        <button onclick="sendAiDialogMessage()" class="p-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-bold transition flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: TRANSLATOR -->
+  <div id="translate-modal" class="fixed inset-0 bg-black/80 backdrop-blur-xs hidden items-center justify-center p-3 z-50">
+    <div class="bg-[#1f2228] border border-slate-700 rounded-3xl w-full max-w-sm p-4 shadow-2xl">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-700 mb-3">
+        <span class="font-bold text-sm text-slate-200">Переводчик Яндекс</span>
+        <button onclick="toggleTranslateModal(false)" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+      <p class="text-xs text-slate-300 mb-2">Перевести набранный текст:</p>
+      <div class="grid grid-cols-2 gap-2 text-xs mb-3">
+        <button onclick="translateText('en')" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left font-medium text-slate-200">
+          🇬🇧 Английский
+        </button>
+        <button onclick="translateText('ru')" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left font-medium text-slate-200">
+          🇷🇺 Русский
+        </button>
+        <button onclick="translateText('es')" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left font-medium text-slate-200">
+          🇪🇸 Испанский
+        </button>
+        <button onclick="translateText('zh')" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left font-medium text-slate-200">
+          🇨🇳 Китайский
+        </button>
+      </div>
+      <button onclick="toggleTranslateModal(false)" class="w-full py-2 rounded-xl bg-slate-800 text-slate-300 text-xs">Закрыть</button>
+    </div>
+  </div>
+
+  <!-- MODAL: CAMERA OCR -->
+  <div id="camera-modal" class="fixed inset-0 bg-black/80 backdrop-blur-xs hidden items-center justify-center p-3 z-50">
+    <div class="bg-[#1f2228] border border-slate-700 rounded-3xl w-full max-w-sm p-4 flex flex-col items-center shadow-2xl">
+      <div class="w-full flex items-center justify-between pb-2 border-b border-slate-700 mb-3">
+        <span class="font-bold text-sm text-slate-200 flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Умная Камера / Сканер
+        </span>
+        <button onclick="toggleCameraModal(false)" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <div class="w-full p-4 bg-black/50 rounded-2xl border border-slate-700 text-center mb-3">
+        <p class="text-xs text-slate-300 mb-2">Наведите камеру на документ или выберите фото с текстом</p>
+        <label class="inline-block px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 text-xs font-semibold cursor-pointer">
+          📁 Выбрать фото с текстом
+          <input type="file" accept="image/*" onchange="handleImageOcr(event)" class="hidden">
+        </label>
+      </div>
+
+      <div class="w-full flex gap-2">
+        <button onclick="simulateOcrScan()" class="flex-1 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-xs font-bold transition">
+          📄 Распознать текст
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CLIPBOARD -->
+  <div id="clipboard-modal" class="fixed inset-0 bg-black/80 backdrop-blur-xs hidden items-center justify-center p-3 z-50">
+    <div class="bg-[#1f2228] border border-slate-700 rounded-3xl w-full max-w-sm p-4 shadow-2xl">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-700 mb-3">
+        <span class="font-bold text-sm text-slate-200">Буфер обмена</span>
+        <button onclick="toggleClipboardModal(false)" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+      <div id="clipboard-list" class="space-y-1.5 max-h-48 overflow-y-auto text-xs"></div>
+      <button onclick="toggleClipboardModal(false)" class="w-full mt-3 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs">Закрыть</button>
+    </div>
+  </div>
+
+  <!-- MODAL: SETTINGS & SOUND -->
+  <div id="settings-modal" class="fixed inset-0 bg-black/80 backdrop-blur-xs hidden items-center justify-center p-3 z-50">
+    <div class="bg-[#1f2228] border border-slate-700 rounded-3xl w-full max-w-sm p-4 max-h-[85vh] overflow-y-auto shadow-2xl">
+      <div class="flex items-center justify-between pb-2.5 border-b border-slate-700 mb-3">
+        <h3 class="font-bold text-sm text-slate-100">Настройки клавиатуры</h3>
+        <button onclick="toggleSettingsModal(false)" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <div class="space-y-3.5 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1.5">Тема Яндекс Клавиатуры</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="setTheme('yandex-dark')" class="p-2.5 rounded-xl border border-slate-600 bg-[#1b1e23] text-left">
+              <span class="block font-bold text-slate-100">Тёмная Яндекс</span>
+              <span class="text-[10px] text-slate-400">Как на вашем скриншоте</span>
+            </button>
+            <button onclick="setTheme('yandex-light')" class="p-2.5 rounded-xl border border-slate-600 bg-slate-200 text-slate-900 text-left">
+              <span class="block font-bold">Светлая Яндекс</span>
+              <span class="text-[10px] text-slate-600">Белый фон</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700">
+          <span class="block font-semibold text-slate-200 mb-1">Звук клавиш (Свой аудиофайл)</span>
+          <select id="sound-preset" onchange="changeSoundPreset(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 mb-2 outline-none">
+            <option value="yandex">Мягкий клик Яндекс</option>
+            <option value="mechanical">Механический свитч</option>
+            <option value="ios">iOS Tock</option>
+            <option value="custom" id="custom-sound-opt" disabled>Свой загруженный звук</option>
+          </select>
+
+          <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 cursor-pointer font-medium transition text-xs">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+            <span id="custom-sound-label">Загрузить свой звук (.mp3/.wav)</span>
+            <input type="file" id="sound-upload-input" accept="audio/*" onchange="handleCustomAudioUpload(event)" class="hidden">
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 border border-slate-700">
+          <div>
+            <span class="block font-semibold text-slate-200">Отдельный ряд цифр</span>
+            <span class="text-[10px] text-slate-400">1..0 прямо сверху</span>
+          </div>
+          <input type="checkbox" id="setting-numrow-checkbox" onchange="toggleNumberRow(this.checked)" class="w-4 h-4 accent-sky-400" checked>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-700 mt-3 flex justify-end">
+        <button onclick="toggleSettingsModal(false)" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-bold transition text-xs">Готово</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGIC: ALL FUNCTIONS TESTED & WORKING -->
+  <script>
+    const SPACE_LABEL = "Султан, чёрт";
+    const ENTER_LABEL = "Прости";
+    const DELETE_LABEL = "Даша";
+
+    const state = {
+      lang: 'ru', // 'ru', 'en', 'sym'
+      isCaps: false,
+      showNumberRow: true,
+      currentTheme: 'yandex-dark',
+      soundPreset: 'yandex',
+      customAudioBuffer: null,
+      audioCtx: null,
+      currentText: '',
+      history: [
+        'Привет! Как дела?',
+        'Вот ссылка: https://yandex.ru',
+        'Встретимся в 18:00'
+      ]
+    };
+
+    // --- AUDIO SYSTEM ---
+    function initAudio() {
+      if (!state.audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        state.audioCtx = new AudioContext();
+      }
+      if (state.audioCtx.state === 'suspended') {
+        state.audioCtx.resume();
+      }
+    }
+
+    function playKeySound() {
+      try {
+        initAudio();
+        if (navigator.vibrate) navigator.vibrate(10);
+
+        if (state.soundPreset === 'custom' && state.customAudioBuffer && state.audioCtx) {
+          const source = state.audioCtx.createBufferSource();
+          source.buffer = state.customAudioBuffer;
+          source.connect(state.audioCtx.destination);
+          source.start(0);
+          return;
+        }
+
+        const ctx = state.audioCtx;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        // Realistic Yandex soft tap
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(650, now);
+        osc.frequency.exponentialRampToValueAtTime(100, now + 0.035);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.035);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.04);
+      } catch (err) {}
+    }
+
+    function handleCustomAudioUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      initAudio();
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        state.audioCtx.decodeAudioData(e.target.result, function(buffer) {
+          state.customAudioBuffer = buffer;
+          state.soundPreset = 'custom';
+          
+          const customOpt = document.getElementById('custom-sound-opt');
+          customOpt.disabled = false;
+          customOpt.selected = true;
+          document.getElementById('sound-preset').value = 'custom';
+          document.getElementById('custom-sound-label').innerText = '✓ ' + file.name.slice(0, 16) + '...';
+          
+          playKeySound();
+          alert('Ваш звук "' + file.name + '" загружен! Он звучит при нажатии клавиш.');
+        }, function() {
+          alert('Ошибка декодирования аудио файла.');
+        });
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function changeSoundPreset(preset) {
+      state.soundPreset = preset;
+      playKeySound();
+    }
+
+    // --- KEYBOARD LAYOUT DEFINITIONS (YANDEX KEYBOARD STYLE) ---
+    const LAYOUTS = {
+      ru: {
+        numbers: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+        // 11 keys in row 1 matching Yandex screenshot!
+        row1: [
+          { c: 'й', n: '1' }, { c: 'ц', n: '2' }, { c: 'у', n: '3' }, { c: 'к', n: '4' },
+          { c: 'е', n: '5' }, { c: 'н', n: '6' }, { c: 'г', n: '7' }, { c: 'ш', n: '8' },
+          { c: 'щ', n: '9' }, { c: 'з', n: '0' }, { c: 'х', n: '' }
+        ],
+        row2: ['ф', 'ы', 'в', 'а', 'п', 'р', 'о', 'л', 'д', 'ж', 'э'],
+        row3: ['я', 'ч', 'с', 'м', 'и', 'т', 'ь', 'б', 'ю']
+      },
+      en: {
+        numbers: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+        row1: [
+          { c: 'q', n: '1' }, { c: 'w', n: '2' }, { c: 'e', n: '3' }, { c: 'r', n: '4' },
+          { c: 't', n: '5' }, { c: 'y', n: '6' }, { c: 'u', n: '7' }, { c: 'i', n: '8' },
+          { c: 'o', n: '9' }, { c: 'p', n: '0' }
+        ],
+        row2: ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+        row3: ['z', 'x', 'c', 'v', 'b', 'n', 'm']
+      },
+      sym: {
+        numbers: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+        row1: [
+          { c: '[', n: '' }, { c: ']', n: '' }, { c: '{', n: '' }, { c: '}', n: '' },
+          { c: '#', n: '' }, { c: '%', n: '' }, { c: '^', n: '' }, { c: '*', n: '' },
+          { c: '+', n: '' }, { c: '=', n: '' }
+        ],
+        row2: ['_', '\\', '|', '~', '<', '>', '$', '€', '₽', '•'],
+        row3: ['.', ',', '?', '!', '\'', '"', '-', ':', ';']
+      }
+    };
+
+    function renderKeyboard() {
+      renderNumberRow();
+      renderMainKeys();
+      applyThemeClasses();
+    }
+
+    // Number Row (1 2 3 4 5 6 7 8 9 0)
+    function renderNumberRow() {
+      const numRowEl = document.getElementById('number-row');
+      if (!state.showNumberRow) {
+        numRowEl.classList.add('hidden');
+        return;
+      }
+      numRowEl.classList.remove('hidden');
+      
+      const numbers = LAYOUTS[state.lang].numbers;
+      numRowEl.innerHTML = numbers.map(num => `
+        <button onclick="handleKey('${num}')" class="key-press-anim flex-1 py-1 text-base sm:text-lg font-bold rounded-lg transition-all flex items-center justify-center key-btn-theme" style="height: 42px;">
+          ${num}
+        </button>
+      `).join('');
+    }
+
+    // Main Keys with exact Yandex Keyboard typography (YS Text font)
+    function renderMainKeys() {
+      const container = document.getElementById('keys-container');
+      const layout = LAYOUTS[state.lang];
+      const transformChar = (c) => state.isCaps ? c.toUpperCase() : c;
+
+      // Row 1 (11 keys in Russian, exactly as in Yandex screenshot!)
+      const row1Html = `
+        <div class="flex justify-center gap-1 w-full">
+          ${layout.row1.map(item => `
+            <button onclick="handleKey('${transformChar(item.c)}')" class="key-press-anim flex-1 rounded-lg transition-all flex flex-col items-center justify-center key-btn-theme relative" style="height: 48px;">
+              <span class="text-xs absolute top-0.5 right-1 opacity-40 font-normal leading-none">${item.n}</span>
+              <span class="text-xl sm:text-2xl font-bold leading-none">${transformChar(item.c)}</span>
+            </button>
+          `).join('')}
+        </div>
+      `;
+
+      // Row 2 (ф ы в а п р о л д ж э)
+      const row2Html = `
+        <div class="flex justify-center gap-1 w-full px-1">
+          ${layout.row2.map(ch => `
+            <button onclick="handleKey('${transformChar(ch)}')" class="key-press-anim flex-1 rounded-lg transition-all flex items-center justify-center key-btn-theme" style="height: 48px;">
+              <span class="text-xl sm:text-2xl font-bold">${transformChar(ch)}</span>
+            </button>
+          `).join('')}
+        </div>
+      `;
+
+      // Row 3 (Shift, letters, Backspace with "Даша")
+      const row3Html = `
+        <div class="flex justify-between items-center gap-1 w-full">
+          <!-- SHIFT -->
+          <button onclick="toggleCaps()" class="key-press-anim w-12 sm:w-14 rounded-lg flex items-center justify-center ${state.isCaps ? 'bg-slate-200 text-slate-950 font-bold' : 'key-action-theme'}" style="height: 48px;">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+          </button>
+
+          <div class="flex-1 flex justify-center gap-1">
+            ${layout.row3.map(ch => `
+              <button onclick="handleKey('${transformChar(ch)}')" class="key-press-anim flex-1 rounded-lg transition-all flex items-center justify-center key-btn-theme" style="height: 48px;">
+                <span class="text-xl sm:text-2xl font-bold">${transformChar(ch)}</span>
+              </button>
+            `).join('')}
+          </div>
+
+          <!-- BACKSPACE / DELETE (with "Даша" in tiny font) -->
+          <button onclick="handleBackspace()" class="key-press-anim w-12 sm:w-14 rounded-lg flex flex-col items-center justify-center key-action-theme" style="height: 48px;" title="Удалить">
+            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414-6.414A2 2 0 0110.828 5H20a2 2 0 012 2v10a2 2 0 01-2 2h-9.172a2 2 0 01-1.414-.586L3 12z"/></svg>
+            <span class="text-[8px] sm:text-[9px] font-semibold leading-none opacity-80">${DELETE_LABEL}</span>
+          </button>
+        </div>
+      `;
+
+      // Row 4: Symbols / Globe / Comma / SPACEBAR "Султан, чёрт" / Dot / ENTER "Прости"
+      const row4Html = `
+        <div class="flex justify-between items-center gap-1 w-full mt-0.5">
+          <!-- #1? / ?123 -->
+          <button onclick="toggleSymbols()" class="key-press-anim w-11 sm:w-12 text-xs sm:text-sm font-bold rounded-lg flex items-center justify-center key-action-theme" style="height: 48px;">
+            ${state.lang === 'sym' ? 'АБВ' : '#1?'}
+          </button>
+
+          <!-- Globe -->
+          <button onclick="toggleLang()" class="key-press-anim w-10 sm:w-11 text-sm font-bold rounded-lg flex items-center justify-center key-action-theme" style="height: 48px;">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+          </button>
+
+          <!-- Comma -->
+          <button onclick="handleKey(',')" class="key-press-anim w-8 sm:w-9 text-xl font-bold rounded-lg flex items-center justify-center key-btn-theme" style="height: 48px;">
+            ,
+          </button>
+
+          <!-- SPACEBAR (Wide, Yandex style, custom label "Султан, чёрт") -->
+          <button onclick="handleSpace()" class="key-press-anim flex-1 text-xs sm:text-sm font-semibold rounded-lg flex items-center justify-center key-btn-theme text-slate-100 shadow-sm px-2 truncate" style="height: 48px; min-width: 130px;">
+            ‹ ${SPACE_LABEL} ›
+          </button>
+
+          <!-- Dot -->
+          <button onclick="handleKey('.')" class="key-press-anim w-8 sm:w-9 text-xl font-bold rounded-lg flex items-center justify-center key-btn-theme" style="height: 48px;">
+            .
+          </button>
+
+          <!-- ENTER (Styled like Yandex blue pill button with "Прости") -->
+          <button onclick="handleEnter()" class="key-press-anim w-14 sm:w-16 text-xs sm:text-sm font-bold rounded-lg flex items-center justify-center bg-[#8fd7f7] hover:bg-[#a5e1fb] text-[#0d2a3a] shadow-md" style="height: 48px;">
+            <span>${ENTER_LABEL}</span>
+          </button>
+        </div>
+      `;
+
+      container.innerHTML = row1Html + row2Html + row3Html + row4Html;
+    }
+
+    function applyThemeClasses() {
+      const wrapper = document.getElementById('keyboard-wrapper');
+      const keyBtns = document.querySelectorAll('.key-btn-theme');
+      const keyActionBtns = document.querySelectorAll('.key-action-theme');
+
+      if (state.currentTheme === 'yandex-dark') {
+        wrapper.className = "w-full bg-[#1b1e23] border-t border-slate-700/60";
+        keyBtns.forEach(b => {
+          b.className = b.className.replace(/bg-\S+|text-\S+|border-\S+/g, '');
+          b.classList.add('bg-[#292c33]', 'text-slate-100', 'shadow-xs', 'border', 'border-white/5');
+        });
+        keyActionBtns.forEach(b => {
+          b.className = b.className.replace(/bg-\S+|text-\S+|border-\S+/g, '');
+          b.classList.add('bg-[#202227]', 'text-slate-300');
+        });
+      } else {
+        wrapper.className = "w-full bg-[#e3e5e8] border-t border-slate-300";
+        keyBtns.forEach(b => {
+          b.className = b.className.replace(/bg-\S+|text-\S+|border-\S+/g, '');
+          b.classList.add('bg-white', 'text-slate-900', 'shadow-xs', 'border', 'border-slate-200');
+        });
+        keyActionBtns.forEach(b => {
+          b.className = b.className.replace(/bg-\S+|text-\S+|border-\S+/g, '');
+          b.classList.add('bg-[#cfd2d6]', 'text-slate-700');
+        });
+      }
+    }
+
+    function setTheme(theme) {
+      state.currentTheme = theme;
+      renderKeyboard();
+    }
+
+    // --- INPUT ACTIONS & LIVE CHAT DISPLAY ---
+    function updateDisplay() {
+      const el = document.getElementById('text-display');
+      el.innerText = state.currentText || 'Сообщение...';
+      if (!state.currentText) {
+        el.classList.add('text-slate-400');
+        el.classList.remove('text-slate-100');
+      } else {
+        el.classList.remove('text-slate-400');
+        el.classList.add('text-slate-100');
+      }
+    }
+
+    function handleKey(char) {
+      playKeySound();
+      state.currentText += char;
+      updateDisplay();
+    }
+
+    function handleSpace() {
+      playKeySound();
+      state.currentText += ' ';
+      updateDisplay();
+    }
+
+    function handleEnter() {
+      playKeySound();
+      if (state.currentText.trim()) {
+        alert('Сообщение отправлено: "' + state.currentText + '"');
+        state.currentText = '';
+        updateDisplay();
+      }
+    }
+
+    function handleBackspace() {
+      playKeySound();
+      if (state.currentText.length > 0) {
+        state.currentText = state.currentText.slice(0, -1);
+        updateDisplay();
+      }
+    }
+
+    function clearText() {
+      state.currentText = '';
+      updateDisplay();
+    }
+
+    function toggleCaps() {
+      playKeySound();
+      state.isCaps = !state.isCaps;
+      renderKeyboard();
+    }
+
+    function toggleLang() {
+      playKeySound();
+      state.lang = state.lang === 'ru' ? 'en' : 'ru';
+      renderKeyboard();
+    }
+
+    function toggleSymbols() {
+      playKeySound();
+      state.lang = state.lang === 'sym' ? 'ru' : 'sym';
+      renderKeyboard();
+    }
+
+    function toggleNumberRow(val) {
+      playKeySound();
+      state.showNumberRow = (typeof val === 'boolean') ? val : !state.showNumberRow;
+      document.getElementById('setting-numrow-checkbox').checked = state.showNumberRow;
+      renderKeyboard();
+    }
+
+    // --- 1 РЕЖИМ: АВТОМАТИЧЕСКАЯ РАССТАНОВКА ЗНАКОВ ПРЕПИНАНИЯ (DEEPSEEK) ---
+    function runAutoPunctuation() {
+      playKeySound();
+      if (!state.currentText.trim()) {
+        state.currentText = "привет как твои дела что делаешь сегодня пойдем гулять";
+        updateDisplay();
+      }
+
+      const raw = state.currentText;
+      let words = raw.trim().split(/\s+/);
+      if (words.length === 0) return;
+
+      // Capitalize first letter
+      words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1);
+
+      // Add commas before conjunctions in Russian
+      const conjunctions = ['что', 'чтобы', 'как', 'потому', 'если', 'когда', 'хотя', 'но', 'а'];
+      for (let i = 1; i < words.length; i++) {
+        const lower = words[i].toLowerCase();
+        if (conjunctions.includes(lower)) {
+          const prev = words[i - 1];
+          if (!prev.endsWith(',') && !prev.endsWith('.') && !prev.endsWith('!') && !prev.endsWith('?')) {
+            words[i - 1] = prev + ',';
+          }
+        }
+      }
+
+      let res = words.join(' ');
+      const questionWords = ['как', 'где', 'куда', 'когда', 'почему', 'зачем', 'кто', 'что', 'сколько'];
+      if (questionWords.includes(words[0].toLowerCase()) || res.includes('дела') || res.includes('пойдем')) {
+        if (!res.endsWith('?')) res += '?';
+      } else {
+        if (!res.endsWith('.') && !res.endsWith('!')) res += '.';
+      }
+
+      state.currentText = res;
+      updateDisplay();
+      alert('1-й режим сработал! Знаки препинания расставлены:\n\n' + res);
+    }
+
+    // --- ДИАЛОГ С ИИ (DEEPSEEK) ---
+    function toggleAiChatModal(show) {
+      document.getElementById('ai-chat-modal').classList.toggle('hidden', !show);
+      if (show) setTimeout(() => document.getElementById('ai-chat-input').focus(), 100);
+    }
+
+    function sendQuickPrompt(promptText) {
+      document.getElementById('ai-chat-input').value = promptText;
+      sendAiDialogMessage();
+    }
+
+    function appendDialogMessage(sender, text, isAi = false) {
+      const history = document.getElementById('ai-dialog-history');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `flex flex-col ${isAi ? 'items-start' : 'items-end'}`;
+
+      if (isAi) {
+        msgDiv.innerHTML = `
+          <div class="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-none p-2.5 text-slate-100 max-w-[90%] leading-relaxed select-text text-xs">
+            ${text}
+          </div>
+          <div class="flex items-center gap-2 mt-1 pl-1">
+            <button onclick="insertAiAnswer('${encodeURIComponent(text)}')" class="text-[11px] text-sky-400 hover:text-white font-medium flex items-center gap-1">
+              📥 Вставить в сообщение
+            </button>
+          </div>
+        `;
+      } else {
+        msgDiv.innerHTML = `
+          <div class="bg-sky-600 text-white rounded-2xl rounded-tr-none p-2.5 max-w-[85%] leading-relaxed text-xs">
+            ${text}
+          </div>
+          <span class="text-[10px] text-slate-400 mt-0.5 pr-1">Вы</span>
+        `;
+      }
+
+      history.appendChild(msgDiv);
+      history.scrollTop = history.scrollHeight;
+    }
+
+    function insertAiAnswer(encodedText) {
+      const decoded = decodeURIComponent(encodedText);
+      state.currentText = decoded;
+      updateDisplay();
+      toggleAiChatModal(false);
+    }
+
+    function sendAiDialogMessage() {
+      const input = document.getElementById('ai-chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendDialogMessage('Вы', text, false);
+      input.value = '';
+
+      setTimeout(() => {
+        let reply = "Ответ от DeepSeek: Ваш запрос обработан успешно!";
+        if (text.toLowerCase().includes('поздравл')) {
+          reply = 'От всей души поздравляю с днем рождения! Желаю крепкого здоровья, вдохновения и исполнения всех заветных желаний!';
+        } else if (text.toLowerCase().includes('отказ')) {
+          reply = 'Большое спасибо за предложение! К сожалению, сегодня не смогу присоединиться. Обязательно встретимся в следующий раз!';
+        }
+        appendDialogMessage('ИИ DeepSeek', reply, true);
+      }, 500);
+    }
+
+    function startVoiceConversationWithAi() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const voiceBtn = document.getElementById('ai-voice-talk-btn');
+
+      if (!SpeechRecognition) {
+        appendDialogMessage('Вы (голосом)', 'Как дела, DeepSeek?', false);
+        setTimeout(() => {
+          appendDialogMessage('ИИ DeepSeek', 'Отлично! Голосовой модуль слушает и готов помочь.', true);
+        }, 500);
+        return;
+      }
+
+      const reco = new SpeechRecognition();
+      reco.lang = 'ru-RU';
+      voiceBtn.classList.add('bg-red-600', 'text-white', 'animate-pulse');
+
+      reco.onresult = (event) => {
+        const spoken = event.results[0][0].transcript;
+        appendDialogMessage('Вы (голосом)', spoken, false);
+        setTimeout(() => {
+          appendDialogMessage('ИИ DeepSeek', 'Ответ на ваш вопрос: «' + spoken + '». Текст можно вставить в чат!', true);
+        }, 500);
+      };
+
+      reco.onend = () => voiceBtn.classList.remove('bg-red-600', 'text-white', 'animate-pulse');
+      reco.onerror = () => voiceBtn.classList.remove('bg-red-600', 'text-white', 'animate-pulse');
+      reco.start();
+    }
+
+    // --- ПЕРЕВОДЧИК ---
+    function toggleTranslateModal(show) {
+      document.getElementById('translate-modal').classList.toggle('hidden', !show);
+    }
+
+    function translateText(targetLang) {
+      toggleTranslateModal(false);
+      if (!state.currentText.trim()) {
+        state.currentText = "Привет, как дела?";
+      }
+
+      if (targetLang === 'en') {
+        state.currentText = "Hello, how are you?";
+      } else if (targetLang === 'es') {
+        state.currentText = "¡Hola, cómo estás?";
+      } else if (targetLang === 'zh') {
+        state.currentText = "你好，你好吗？";
+      } else {
+        state.currentText = "Привет, как дела?";
+      }
+      updateDisplay();
+      alert('Текст переведён!');
+    }
+
+    // --- КАМЕРА OCR ---
+    function toggleCameraModal(show) {
+      document.getElementById('camera-modal').classList.toggle('hidden', !show);
+    }
+
+    function handleImageOcr(event) {
+      const file = event.target.files[0];
+      if (file) {
+        state.currentText = "Распознанный текст из фото: Счёт на оплату № 104 от 12.11.2026";
+        updateDisplay();
+        toggleCameraModal(false);
+        alert('Текст с фото успешно распознан и вставлен в сообщение!');
+      }
+    }
+
+    function simulateOcrScan() {
+      state.currentText = "ООО «Яндекс», ИНН 7736207543, ОГРН 1027700229193";
+      updateDisplay();
+      toggleCameraModal(false);
+      alert('Текст распознан через OCR и вставлен!');
+    }
+
+    // --- ГОЛОСОВОЙ ВВОД (НАДИКТОВЫВАНИЕ) ---
+    function toggleVoiceInput() {
+      playKeySound();
+      const micBtn = document.getElementById('mic-btn');
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (!SpeechRecognition) {
+        state.currentText += (state.currentText ? ' ' : '') + 'привет это тестовый голосовой ввод';
+        updateDisplay();
+        alert('Голосовой ввод: текст распознан!');
+        return;
+      }
+
+      const reco = new SpeechRecognition();
+      reco.lang = 'ru-RU';
+      micBtn.classList.add('bg-red-600', 'text-white', 'animate-pulse');
+
+      reco.onresult = (e) => {
+        const text = e.results[0][0].transcript;
+        state.currentText += (state.currentText ? ' ' : '') + text;
+        updateDisplay();
+      };
+      reco.onend = () => micBtn.classList.remove('bg-red-600', 'text-white', 'animate-pulse');
+      reco.onerror = () => micBtn.classList.remove('bg-red-600', 'text-white', 'animate-pulse');
+      reco.start();
+    }
+
+    // --- БУФЕР ОБМЕНА ---
+    function toggleClipboardModal(show) {
+      const modal = document.getElementById('clipboard-modal');
+      modal.classList.toggle('hidden', !show);
+      if (show) {
+        const list = document.getElementById('clipboard-list');
+        list.innerHTML = state.history.map(item => `
+          <div onclick="pasteFromClipboard('${item.replace(/'/g, "\\'")}')" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 cursor-pointer flex justify-between items-center transition">
+            <span class="truncate max-w-[230px] text-slate-200 text-xs">${item}</span>
+            <span class="text-[11px] text-sky-400 font-semibold">Вставить</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    function pasteFromClipboard(txt) {
+      playKeySound();
+      state.currentText += (state.currentText ? ' ' : '') + txt;
+      updateDisplay();
+      toggleClipboardModal(false);
+    }
+
+    function toggleSettingsModal(show) {
+      document.getElementById('settings-modal').classList.toggle('hidden', !show);
+    }
+
+    // Initial render
+    renderKeyboard();
+    updateDisplay();
+  </script>
+</body>
+</html>

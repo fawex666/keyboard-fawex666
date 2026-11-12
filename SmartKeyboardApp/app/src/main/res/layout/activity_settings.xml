@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121316"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Настройки Умной Клавиатуры"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 1. DeepSeek API Key -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="API Ключ DeepSeek (для знаков препинания и ИИ)"
+            android:textColor="#E2E8F0"
+            android:textSize="14sp"
+            android:layout_marginBottom="6dp" />
+
+        <EditText
+            android:id="@+id/et_api_key"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="sk-..."
+            android:textColor="#FFFFFF"
+            android:textColorHint="#64748B"
+            android:background="#1E293B"
+            android:paddingHorizontal="12dp"
+            android:inputType="textPassword"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 2. Number Row Switch -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="#1E293B"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Отдельный ряд цифр сверху (1..0)"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp" />
+
+            <Switch
+                android:id="@+id/switch_number_row"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true" />
+        </LinearLayout>
+
+        <!-- 3. Custom Audio Upload -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Кастомный звук клавиш (.mp3 / .wav)"
+            android:textColor="#E2E8F0"
+            android:textSize="14sp"
+            android:layout_marginBottom="6dp" />
+
+        <Button
+            android:id="@+id/btn_pick_sound"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="📁 Выбрать свой аудиофайл звука"
+            android:textColor="#1E293B"
+            android:backgroundTint="#F59E0B"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tv_selected_sound"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Используется: системный звук"
+            android:textColor="#94A3B8"
+            android:textSize="12sp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- 4. Save Button -->
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="Сохранить настройки"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#3B82F6" />
+
+    </LinearLayout>
+</ScrollView>

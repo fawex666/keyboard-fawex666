@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Умная Клавиатура</string>
+    <string name="settings_title">Настройки Клавиатуры</string>
+    <string name="subtype_ru">Русский (ЙЦУКЕН)</string>
+    <string name="subtype_en">English (QWERTY)</string>
+    <string name="punctuation_button">.,?!</string>
+    <string name="deepseek_default_model">deepseek-chat</string>
+</resources>
