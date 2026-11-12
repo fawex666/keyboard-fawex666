@@ -10,9 +10,6 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 
 class CameraOcrActivity : AppCompatActivity() {
 
@@ -23,10 +20,10 @@ class CameraOcrActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        if (takePictureIntent.resolveActivity(packageManager) != null) {
+        try {
+            val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
-        } else {
+        } catch (e: Exception) {
             Toast.makeText(this, "Камера недоступна", Toast.LENGTH_SHORT).show()
             finish()
         }
@@ -37,35 +34,12 @@ class CameraOcrActivity : AppCompatActivity() {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
             val imageBitmap = data?.extras?.get("data") as? Bitmap
             if (imageBitmap != null) {
-                processImageWithMlKit(imageBitmap)
-            } else {
-                finish()
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("Camera", "[Фото сохранено]")
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(this, "Фото получено!", Toast.LENGTH_SHORT).show()
             }
-        } else {
-            finish()
         }
-    }
-
-    private fun processImageWithMlKit(bitmap: Bitmap) {
-        val image = InputImage.fromBitmap(bitmap, 0)
-        val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-
-        recognizer.process(image)
-            .addOnSuccessListener { visionText ->
-                val detectedText = visionText.text
-                if (detectedText.isNotBlank()) {
-                    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText("OCR", detectedText)
-                    clipboard.setPrimaryClip(clip)
-                    Toast.makeText(this, "Текст скопирован в буфер обмена!", Toast.LENGTH_LONG).show()
-                } else {
-                    Toast.makeText(this, "Текст на фото не обнаружен", Toast.LENGTH_SHORT).show()
-                }
-                finish()
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "Ошибка распознавания: ${it.localizedMessage}", Toast.LENGTH_SHORT).show()
-                finish()
-            }
+        finish()
     }
 }

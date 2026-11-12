@@ -68,7 +68,7 @@ class SettingsActivity : AppCompatActivity() {
                         uri,
                         Intent.FLAG_GRANT_READ_URI_PERMISSION
                     )
-                } catch (_: Exception) {}
+                } catch (e: Exception) {}
 
                 selectedAudioUri = uri
                 val prefs = PreferenceManager.getDefaultSharedPreferences(this)

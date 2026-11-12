@@ -76,7 +76,7 @@ class SoundManager(private val context: Context) {
                 @Suppress("DEPRECATION")
                 vibrator?.vibrate(12)
             }
-        } catch (_: Exception) {}
+        } catch (e: Exception) {}
 
         // Sound Playback
         try {
